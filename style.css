@@ -317,7 +317,7 @@ body.hovering .cursor-outline {
 .card-media::after { content:''; position: absolute; inset: 0; background: linear-gradient(to top, rgba(6,6,10,0.95), rgba(6,6,10,0.15) 55%, transparent); }
 .card-info { position: absolute; left: 0; right: 0; bottom: 0; padding: 2rem; z-index: 2; }
 .card-cat { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.16em; color: var(--accent); }
-.card-info h3 { font-size: 1.9rem; margin-top: 0.4rem; }
+.card-info h3, .card-info h4 { font-size: 1.9rem; margin-top: 0.4rem; font-family: var(--font-serif); font-weight: 500; }
 .card-info p { color: var(--text-muted); margin-top: 0.5rem; font-size: 0.92rem; max-width: 40rem; }
 .card-tags { display: flex; flex-wrap: wrap; gap: 0.45rem; margin-top: 0.9rem; }
 .card-tags span { font-size: 0.68rem; padding: 0.25rem 0.6rem; border-radius: 999px; border: 1px solid var(--border); color: var(--text-muted); background: rgba(255,255,255,0.06); backdrop-filter: blur(4px); }
@@ -478,7 +478,46 @@ body.hovering .cursor-outline {
     .hamburger { display: flex; }
     .cursor-dot, .cursor-outline { display: none; }
     .footer-inner { justify-content: center; text-align: center; }
-    .contact-actions .btn { width: 100%; justify-content: center; }
+    .contact-actions .btn { width: 100%; justify-content: center; box-sizing: border-box; }
+    .contact-actions { flex-direction: column; align-items: stretch; padding: 0; gap: 0.8rem; }
+    .cta-panel { padding: 2.8rem 1.4rem; border-radius: 16px; overflow: hidden; }
+    .contact-title { font-size: clamp(2rem, 8vw, 3rem); }
+    .contact-form { max-width: 100%; box-sizing: border-box; }
+    .form-field input, .form-field textarea { font-size: 1rem; box-sizing: border-box; width: 100%; }
+    .container { padding: 0 1.2rem; }
+
+    /* Projects mobile fix */
+    .project-grid { grid-template-columns: 1fr !important; gap: 1.4rem; }
+    .project-card {
+        display: flex !important;
+        flex-direction: column !important;
+        overflow: hidden;
+        transform-style: flat !important;
+    }
+    .project-card:hover { transform: none !important; }
+    .card-media {
+        position: relative !important;
+        aspect-ratio: 16/9 !important;
+        width: 100% !important;
+        flex-shrink: 0;
+    }
+    .card-media img {
+        width: 100% !important;
+        height: 100% !important;
+        object-fit: cover !important;
+        object-position: top center !important;
+    }
+    .card-info {
+        position: static !important;
+        padding: 1.2rem 1.4rem 1.4rem !important;
+        background: var(--bg-card) !important;
+        transform: none !important;
+        left: auto !important; right: auto !important; bottom: auto !important;
+    }
+    .card-arrow { top: 0.8rem !important; right: 0.8rem !important; }
+    .card-info h3, .card-info h4 { font-size: 1.2rem !important; }
+    .card-info p { font-size: 0.83rem !important; }
+    .card-tags { margin-top: 0.6rem !important; }
 }
 @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { animation-duration: 0.001s !important; transition-duration: 0.001s !important; }
