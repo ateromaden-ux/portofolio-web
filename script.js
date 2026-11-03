@@ -33,15 +33,14 @@ document.addEventListener("DOMContentLoaded", () => {
     // ── Init background stars — 3 depth layers ───────────────────────────
     const initStars = () => {
       stars = [];
-      const count = Math.floor((canvas.width * canvas.height) / 3200);
+      // Kurangi density: /3200 → /5500, max cap 280 bintang
+      const count = Math.min(280, Math.floor((canvas.width * canvas.height) / 5500));
       for (let i = 0; i < count; i++) {
         const [r, g, b] = starColor();
-        // depth 0=far(slow/small), 1=mid, 2=near(fast/big)
         const depth = Math.random() > 0.7 ? 2 : Math.random() > 0.4 ? 1 : 0;
         stars.push({
           x: Math.random() * canvas.width,
           y: Math.random() * canvas.height,
-          // base radius by depth
           r: depth === 2 ? Math.random() * 1.3 + 0.8
            : depth === 1 ? Math.random() * 0.9 + 0.4
            :               Math.random() * 0.5 + 0.15,
@@ -49,18 +48,23 @@ document.addEventListener("DOMContentLoaded", () => {
           twinkleSpeed: Math.random() * 0.010 + 0.002,
           twinkleDir: Math.random() > 0.5 ? 1 : -1,
           cr: r, cg: g, cb: b,
-          depth, // parallax multiplier: 0→0.4, 1→1.0, 2→1.8
+          depth,
+          // Pre-cache glow threshold: only top ~30% get glow
+          hasGlow: Math.random() > 0.7,
         });
       }
     };
 
     // ── Draw background stars (with parallax) ────────────────────────────
     const drawStars = () => {
-      // smooth lerp mouse offset
-      mouseX += (targetMX - mouseX) * 0.04;
-      mouseY += (targetMY - mouseY) * 0.04;
+      // Lerp hanya jika ada pergerakan berarti, skip jika sudah dekat
+      const dx = targetMX - mouseX, dy = targetMY - mouseY;
+      if (Math.abs(dx) > 0.001 || Math.abs(dy) > 0.001) {
+        mouseX += dx * 0.04;
+        mouseY += dy * 0.04;
+      }
 
-      const PARALLAX = [10, 22, 40]; // px shift per depth layer
+      const PARALLAX = [10, 22, 40];
 
       stars.forEach((s) => {
         s.alpha += s.twinkleSpeed * s.twinkleDir;
@@ -74,13 +78,12 @@ document.addEventListener("DOMContentLoaded", () => {
         ctx.fillStyle = `rgba(${s.cr},${s.cg},${s.cb},${s.alpha.toFixed(2)})`;
         ctx.fill();
 
-        if (s.r > 0.85) {
-          const g2 = ctx.createRadialGradient(px, py, 0, px, py, s.r * 3.5);
-          g2.addColorStop(0, `rgba(${s.cr},${s.cg},${s.cb},${(s.alpha * 0.35).toFixed(2)})`);
-          g2.addColorStop(1, `rgba(${s.cr},${s.cg},${s.cb},0)`);
+        // Glow hanya untuk bintang yang sudah dipilih saat init, skip createRadialGradient tiap frame
+        if (s.hasGlow && s.r > 0.85) {
           ctx.beginPath();
           ctx.arc(px, py, s.r * 3.5, 0, Math.PI * 2);
-          ctx.fillStyle = g2;
+          // Pakai fillStyle sederhana alih-alih radialGradient
+          ctx.fillStyle = `rgba(${s.cr},${s.cg},${s.cb},${(s.alpha * 0.12).toFixed(2)})`;
           ctx.fill();
         }
       });
@@ -199,23 +202,22 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const placeConstellations = () => {
       constellations = [];
-      // scatter them across the viewport with some margin
       const margin = 60;
       const W = canvas.width  - margin * 2;
       const H = canvas.height - margin * 2;
-
-      // use a fixed scale so they look consistent at any screen size
       const scale = Math.min(canvas.width, canvas.height) * 0.28;
 
-      CONSTELLATION_DEFS.forEach((def) => {
+      // Hanya ambil 3 dari 5 rasi — lebih ringan, tetap berasa
+      const activeDefs = CONSTELLATION_DEFS.slice(0, 3);
+
+      activeDefs.forEach((def) => {
         const ox = margin + Math.random() * (W - scale * 0.55);
         const oy = margin + Math.random() * (H - scale * 0.55);
-        const nodeAlpha = 0; // start invisible, fade in
 
         const resolvedNodes = def.nodes.map(([nx, ny]) => ({
           x: ox + nx * scale,
           y: oy + ny * scale,
-          alpha: nodeAlpha,
+          alpha: 0,
           twinkleSpeed: Math.random() * 0.008 + 0.002,
           twinkleDir: Math.random() > 0.5 ? 1 : -1,
           r: Math.random() * 1.0 + 0.8,
@@ -229,10 +231,8 @@ document.addEventListener("DOMContentLoaded", () => {
           fadeSpeed: 0.0008 + Math.random() * 0.0006,
           maxAlpha: 0.25 + Math.random() * 0.2,
           maxNodeAlpha: 0.7 + Math.random() * 0.25,
-          // delay before this one starts fading in (frames)
           delay: Math.floor(Math.random() * 300),
           age: 0,
-          // lifetime in frames before it fades away and repositions
           lifetime: 1800 + Math.floor(Math.random() * 1200),
         });
       });
@@ -294,9 +294,10 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         // draw nodes (constellation stars — slightly brighter)
-        c.nodes.forEach((n) => {
+        c.nodes.forEach((n, ni) => {
           n.alpha += n.twinkleSpeed * n.twinkleDir;
-          const maxA = c.nodes.indexOf(n) === 0 ? c.maxNodeAlpha : c.maxNodeAlpha * 0.85;
+          // Pakai ni===0 alih-alih indexOf (O(1) vs O(n))
+          const maxA = ni === 0 ? c.maxNodeAlpha : c.maxNodeAlpha * 0.85;
           if (n.alpha > maxA || n.alpha < 0.05) n.twinkleDir *= -1;
 
           ctx.beginPath();
@@ -304,20 +305,25 @@ document.addEventListener("DOMContentLoaded", () => {
           ctx.fillStyle = `rgba(200,230,255,${n.alpha.toFixed(3)})`;
           ctx.fill();
 
-          // glow
-          const g3 = ctx.createRadialGradient(n.x, n.y, 0, n.x, n.y, n.r * 4);
-          g3.addColorStop(0, `rgba(160,200,255,${(n.alpha * 0.3).toFixed(3)})`);
-          g3.addColorStop(1, `rgba(160,200,255,0)`);
+          // Glow: simple flat circle, skip createRadialGradient
           ctx.beginPath();
           ctx.arc(n.x, n.y, n.r * 4, 0, Math.PI * 2);
-          ctx.fillStyle = g3;
+          ctx.fillStyle = `rgba(160,200,255,${(n.alpha * 0.1).toFixed(3)})`;
           ctx.fill();
         });
       });
     };
 
     // ── Main loop ─────────────────────────────────────────────────────────
+    // Gunakan visibility API untuk pause saat tab hidden
+    let isVisible = !document.hidden;
+    document.addEventListener("visibilitychange", () => {
+      isVisible = !document.hidden;
+      if (isVisible && !animFrame) loop();
+    });
+
     const loop = () => {
+      if (!isVisible) { animFrame = null; return; }
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       drawStars();
       drawConstellations();
@@ -355,12 +361,18 @@ document.addEventListener("DOMContentLoaded", () => {
     placeConstellations();
     loop();
 
+    // Throttle resize — jangan reinit tiap pixel resize
+    let resizeTimer;
     window.addEventListener("resize", () => {
       cancelAnimationFrame(animFrame);
-      resize();
-      initStars();
-      placeConstellations();
-      loop();
+      animFrame = null;
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(() => {
+        resize();
+        initStars();
+        placeConstellations();
+        loop();
+      }, 200);
     });
   }
 
@@ -412,6 +424,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (trailCanvas) {
       const tctx = trailCanvas.getContext("2d");
       let trailParticles = [];
+      let lastTrailTime = 0;
 
       const resizeTrail = () => {
         trailCanvas.width  = window.innerWidth;
@@ -421,48 +434,46 @@ document.addEventListener("DOMContentLoaded", () => {
       window.addEventListener("resize", resizeTrail);
 
       window.addEventListener("mousemove", (e) => {
-        // spawn 2-3 particles per move
-        const count = Math.floor(Math.random() * 2) + 1;
-        for (let i = 0; i < count; i++) {
-          const colors = [
-            [0,   212, 255],  // cyan
-            [123,  97, 255],  // nebula purple
-            [180, 160, 255],  // soft violet
-            [200, 235, 255],  // starlight
-          ];
-          const [cr, cg, cb] = colors[Math.floor(Math.random() * colors.length)];
-          trailParticles.push({
-            x: e.clientX + (Math.random() - 0.5) * 8,
-            y: e.clientY + (Math.random() - 0.5) * 8,
-            r: Math.random() * 3 + 1,
-            alpha: Math.random() * 0.6 + 0.4,
-            decay: Math.random() * 0.04 + 0.02,
-            vx: (Math.random() - 0.5) * 0.8,
-            vy: (Math.random() - 0.5) * 0.8 - 0.3,
-            cr, cg, cb,
-          });
-        }
+        // Throttle: max 1 partikel per 40ms (~25fps spawn rate)
+        const now = Date.now();
+        if (now - lastTrailTime < 40) return;
+        lastTrailTime = now;
+
+        const colors = [
+          [0,   212, 255],
+          [123,  97, 255],
+          [180, 160, 255],
+        ];
+        const [cr, cg, cb] = colors[Math.floor(Math.random() * colors.length)];
+        trailParticles.push({
+          x: e.clientX + (Math.random() - 0.5) * 6,
+          y: e.clientY + (Math.random() - 0.5) * 6,
+          r: Math.random() * 2.5 + 0.8,
+          alpha: 0.55,
+          decay: Math.random() * 0.035 + 0.02,
+          vx: (Math.random() - 0.5) * 0.6,
+          vy: -0.4 - Math.random() * 0.4,
+          cr, cg, cb,
+        });
+        // Cap array size
+        if (trailParticles.length > 40) trailParticles.splice(0, 10);
       });
 
       const animateTrail = () => {
         tctx.clearRect(0, 0, trailCanvas.width, trailCanvas.height);
-        trailParticles = trailParticles.filter((p) => p.alpha > 0.01);
+        trailParticles = trailParticles.filter((p) => p.alpha > 0.02);
         trailParticles.forEach((p) => {
           p.x += p.vx;
           p.y += p.vy;
           p.alpha -= p.decay;
-          p.r    *= 0.96;
+          p.r    *= 0.97;
 
-          // glow halo
-          const g = tctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.r * 4);
-          g.addColorStop(0, `rgba(${p.cr},${p.cg},${p.cb},${(p.alpha * 0.5).toFixed(2)})`);
-          g.addColorStop(1, `rgba(${p.cr},${p.cg},${p.cb},0)`);
+          // Simple flat circle — no radialGradient
           tctx.beginPath();
-          tctx.arc(p.x, p.y, p.r * 4, 0, Math.PI * 2);
-          tctx.fillStyle = g;
+          tctx.arc(p.x, p.y, p.r * 2.5, 0, Math.PI * 2);
+          tctx.fillStyle = `rgba(${p.cr},${p.cg},${p.cb},${(p.alpha * 0.25).toFixed(2)})`;
           tctx.fill();
 
-          // core dot
           tctx.beginPath();
           tctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
           tctx.fillStyle = `rgba(${p.cr},${p.cg},${p.cb},${p.alpha.toFixed(2)})`;
@@ -716,7 +727,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const initWarp = () => {
       warpCanvas.width  = card.offsetWidth;
       warpCanvas.height = card.offsetHeight;
-      warpStars = Array.from({ length: 80 }, () => ({
+      // Kurangi 80 → 40 bintang
+      warpStars = Array.from({ length: 40 }, () => ({
         angle: Math.random() * Math.PI * 2,
         dist: Math.random() * 0.3 + 0.05,
         speed: Math.random() * 0.006 + 0.003,
@@ -728,11 +740,11 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     const drawWarp = () => {
+      if (warpAlpha <= 0 && !warpActive) { warpAF = null; return; }
+
       const W = warpCanvas.width, H = warpCanvas.height;
       const cx = W / 2, cy = H / 2;
       wctx.clearRect(0, 0, W, H);
-
-      if (warpAlpha <= 0 && !warpActive) { warpAF = null; return; }
 
       warpStars.forEach((s) => {
         if (warpActive) s.dist += s.speed * (warpAlpha * 3 + 0.5);
@@ -740,25 +752,23 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const px = cx + Math.cos(s.angle) * s.dist * W * 0.7;
         const py = cy + Math.sin(s.angle) * s.dist * H * 0.8;
-        const tailLen = warpActive ? s.dist * 28 * warpAlpha : 0;
-        const tx = px - Math.cos(s.angle) * tailLen;
-        const ty = py - Math.sin(s.angle) * tailLen;
+        const tailLen = warpActive ? s.dist * 22 * warpAlpha : 0;
 
         if (tailLen > 1) {
-          const g = wctx.createLinearGradient(tx, ty, px, py);
-          g.addColorStop(0, `rgba(${s.cr},${s.cg},${s.cb},0)`);
-          g.addColorStop(1, `rgba(${s.cr},${s.cg},${s.cb},${(warpAlpha * 0.8).toFixed(2)})`);
+          const tx = px - Math.cos(s.angle) * tailLen;
+          const ty = py - Math.sin(s.angle) * tailLen;
+          // Flat gradient-less line untuk performa
           wctx.beginPath();
           wctx.moveTo(tx, ty);
           wctx.lineTo(px, py);
-          wctx.strokeStyle = g;
-          wctx.lineWidth = s.r * 0.8;
+          wctx.strokeStyle = `rgba(${s.cr},${s.cg},${s.cb},${(warpAlpha * 0.6).toFixed(2)})`;
+          wctx.lineWidth = s.r * 0.7;
           wctx.stroke();
         }
 
         wctx.beginPath();
         wctx.arc(px, py, s.r * warpAlpha, 0, Math.PI * 2);
-        wctx.fillStyle = `rgba(${s.cr},${s.cg},${s.cb},${(warpAlpha * 0.9).toFixed(2)})`;
+        wctx.fillStyle = `rgba(${s.cr},${s.cg},${s.cb},${(warpAlpha * 0.85).toFixed(2)})`;
         wctx.fill();
       });
 
@@ -769,7 +779,7 @@ document.addEventListener("DOMContentLoaded", () => {
       warpActive = true;
       initWarp();
       const fadeIn = () => {
-        warpAlpha = Math.min(1, warpAlpha + 0.06);
+        warpAlpha = Math.min(1, warpAlpha + 0.07);
         if (warpAlpha < 1) requestAnimationFrame(fadeIn);
       };
       fadeIn();
@@ -779,7 +789,7 @@ document.addEventListener("DOMContentLoaded", () => {
     card.addEventListener("mouseleave", () => {
       warpActive = false;
       const fadeOut = () => {
-        warpAlpha = Math.max(0, warpAlpha - 0.05);
+        warpAlpha = Math.max(0, warpAlpha - 0.06);
         if (warpAlpha > 0) requestAnimationFrame(fadeOut);
       };
       fadeOut();

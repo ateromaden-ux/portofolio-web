@@ -214,7 +214,7 @@ body.hovering .cursor-outline {
     font-size: 0.8rem; letter-spacing: 0.28em; text-transform: uppercase;
     color: var(--accent); margin-bottom: 1.6rem;
     padding: 0.55rem 1.2rem; border: 1px solid rgba(0, 212, 255, 0.3); border-radius: 999px;
-    background: rgba(0, 212, 255, 0.05); backdrop-filter: blur(6px);
+    background: rgba(0, 212, 255, 0.05); border: 1px solid rgba(0, 212, 255, 0.3); border-radius: 999px;
 }
 .hero h1 {
     font-size: clamp(3.4rem, 10vw, 7.5rem); line-height: 0.98; margin-bottom: 1.6rem;
@@ -236,8 +236,7 @@ body.hovering .cursor-outline {
 .btn-primary:hover::after { transform: translateX(110%); }
 .btn-primary:hover { box-shadow: 0 18px 44px rgba(0, 212, 255, 0.5); transform: translateY(-3px); }
 .btn-ghost {
-    border: 1px solid var(--border); color: var(--text-primary); background: rgba(100,140,255,0.04);
-    backdrop-filter: blur(8px);
+    border: 1px solid var(--border); color: var(--text-primary); background: rgba(100,140,255,0.06);
 }
 .btn-ghost:hover { border-color: var(--accent); background: rgba(0, 212, 255, 0.08); transform: translateY(-3px); }
 
@@ -257,7 +256,7 @@ body.hovering .cursor-outline {
 .about-visual:hover .image-frame { inset: 14px; opacity: 1; box-shadow: 0 0 30px rgba(0, 212, 255, 0.15); }
 .experience-badge {
     position: absolute; right: -18px; bottom: -18px; padding: 1.4rem 1.6rem; border-radius: 14px;
-    background: rgba(8, 11, 26, 0.9); border: 1px solid var(--border); backdrop-filter: blur(12px);
+    background: rgba(8, 11, 26, 0.92); border: 1px solid var(--border);
     box-shadow: 0 20px 40px rgba(0,0,0,0.5); text-align: center;
 }
 .experience-badge .big { font-family: var(--font-serif); font-size: 2.6rem; background: var(--grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; line-height: 1; }
@@ -277,7 +276,7 @@ body.hovering .cursor-outline {
 .skill-card {
     background: var(--bg-card); border: 1px solid var(--border);
     padding: 2.1rem; border-radius: 16px; position: relative; overflow: hidden;
-    transition: var(--t); backdrop-filter: blur(14px);
+    transition: var(--t);
 }
 .skill-card::before {
     content:''; position:absolute; inset:0; opacity:0;
@@ -322,12 +321,12 @@ body.hovering .cursor-outline {
 .card-info h3, .card-info h4 { font-size: 1.9rem; margin-top: 0.4rem; font-family: var(--font-serif); font-weight: 500; }
 .card-info p { color: var(--text-muted); margin-top: 0.5rem; font-size: 0.92rem; max-width: 40rem; }
 .card-tags { display: flex; flex-wrap: wrap; gap: 0.45rem; margin-top: 0.9rem; }
-.card-tags span { font-size: 0.68rem; padding: 0.25rem 0.6rem; border-radius: 999px; border: 1px solid var(--border); color: var(--text-muted); background: rgba(255,255,255,0.06); backdrop-filter: blur(4px); }
+.card-tags span { font-size: 0.68rem; padding: 0.25rem 0.6rem; border-radius: 999px; border: 1px solid var(--border); color: var(--text-muted); background: rgba(255,255,255,0.06); }
 .card-arrow {
     position: absolute; top: 1.4rem; right: 1.4rem; z-index: 3;
     width: 44px; height: 44px; border-radius: 50%;
     display: grid; place-items: center;
-    background: rgba(255,255,255,0.08); border: 1px solid var(--border); backdrop-filter: blur(6px);
+    background: rgba(255,255,255,0.08); border: 1px solid var(--border);
     opacity: 0; transform: translateY(8px); transition: var(--t);
 }
 .project-card:hover .card-arrow { opacity: 1; transform: translateY(0); }
@@ -422,7 +421,7 @@ body.hovering .cursor-outline {
     position: relative; border-radius: 24px; max-width: 900px; margin: 0 auto;
     padding: 4.5rem 3rem; overflow: hidden;
     background: linear-gradient(150deg, rgba(0, 212, 255, 0.07), rgba(123, 97, 255, 0.09)), rgba(8, 11, 26, 0.7);
-    border: 1px solid var(--border); backdrop-filter: blur(16px);
+    border: 1px solid var(--border);
 }
 .cta-panel::before {
     content:''; position:absolute; width: 340px; height: 340px; border-radius:50%;
@@ -551,7 +550,7 @@ body.hovering .cursor-outline {
     display: flex; flex-direction: column; gap: 0.9rem;
     background: var(--bg-card); border: 1px solid var(--border);
     padding: 2.2rem; border-radius: 16px; position: relative; overflow: hidden;
-    transition: var(--t); backdrop-filter: blur(14px);
+    transition: var(--t);
 }
 .service-card:hover { transform: translateY(-8px); border-color: rgba(123, 97, 255, 0.4); box-shadow: 0 24px 50px rgba(0,0,0,0.5); }
 .service-card::after {
@@ -586,7 +585,7 @@ body.hovering .cursor-outline {
 .testimonial-card {
     background: var(--bg-card); border: 1px solid var(--border);
     padding: 2.2rem; border-radius: 16px; position: relative;
-    backdrop-filter: blur(14px); transition: var(--t);
+    transition: var(--t);
 }
 .testimonial-card:hover { transform: translateY(-6px); border-color: rgba(0, 212, 255, 0.25); box-shadow: 0 22px 46px rgba(0,0,0,0.5); }
 .quote-mark {
