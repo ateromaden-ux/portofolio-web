@@ -18,9 +18,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // ── Star colours ─────────────────────────────────────────────────────
     const starColor = () =>
-      Math.random() > 0.85 ? [180, 160, 255] :   // nebula purple
-      Math.random() > 0.6  ? [140, 210, 255] :    // ice blue
-                              [220, 235, 255];      // white starlight
+      Math.random() > 0.85 ? [192, 132, 252] :   // violet bloom
+      Math.random() > 0.6  ? [167, 139, 250] :    // soft purple
+                              [233, 213, 255];      // lavender white
 
     // ── Parallax mouse offset ─────────────────────────────────────────────
     let mouseX = 0, mouseY = 0;
@@ -129,9 +129,9 @@ document.addEventListener("DOMContentLoaded", () => {
         const tailY = s.y - Math.sin(Math.atan2(s.vy, s.vx)) * s.length;
 
         const grad = ctx.createLinearGradient(tailX, tailY, s.x, s.y);
-        grad.addColorStop(0, `rgba(200,235,255,0)`);
-        grad.addColorStop(0.6, `rgba(180,220,255,${(s.alpha * 0.4).toFixed(2)})`);
-        grad.addColorStop(1, `rgba(220,240,255,${s.alpha.toFixed(2)})`);
+        grad.addColorStop(0, `rgba(192,132,252,0)`);
+        grad.addColorStop(0.6, `rgba(216,180,254,${(s.alpha * 0.5).toFixed(2)})`);
+        grad.addColorStop(1, `rgba(233,213,255,${s.alpha.toFixed(2)})`);
 
         ctx.beginPath();
         ctx.moveTo(tailX, tailY);
@@ -144,7 +144,7 @@ document.addEventListener("DOMContentLoaded", () => {
         // tiny bright head
         ctx.beginPath();
         ctx.arc(s.x, s.y, s.width * 1.2, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(240,248,255,${s.alpha.toFixed(2)})`;
+        ctx.fillStyle = `rgba(240,220,255,${s.alpha.toFixed(2)})`;
         ctx.fill();
 
         s.x     += s.vx;
@@ -282,8 +282,8 @@ document.addEventListener("DOMContentLoaded", () => {
           c.edges.forEach(([a, b]) => {
             const na = c.nodes[a], nb = c.nodes[b];
             const grad = ctx.createLinearGradient(na.x, na.y, nb.x, nb.y);
-            grad.addColorStop(0, `rgba(140,210,255,${c.lineAlpha.toFixed(3)})`);
-            grad.addColorStop(1, `rgba(180,160,255,${c.lineAlpha.toFixed(3)})`);
+            grad.addColorStop(0, `rgba(192,132,252,${c.lineAlpha.toFixed(3)})`);
+            grad.addColorStop(1, `rgba(124,58,237,${c.lineAlpha.toFixed(3)})`);
             ctx.beginPath();
             ctx.moveTo(na.x, na.y);
             ctx.lineTo(nb.x, nb.y);
@@ -302,13 +302,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
           ctx.beginPath();
           ctx.arc(n.x, n.y, n.r, 0, Math.PI * 2);
-          ctx.fillStyle = `rgba(200,230,255,${n.alpha.toFixed(3)})`;
+          ctx.fillStyle = `rgba(233,213,255,${n.alpha.toFixed(3)})`;
           ctx.fill();
 
           // Glow: simple flat circle, skip createRadialGradient
           ctx.beginPath();
           ctx.arc(n.x, n.y, n.r * 4, 0, Math.PI * 2);
-          ctx.fillStyle = `rgba(160,200,255,${(n.alpha * 0.1).toFixed(3)})`;
+          ctx.fillStyle = `rgba(192,132,252,${(n.alpha * 0.15).toFixed(3)})`;
           ctx.fill();
         });
       });
@@ -336,8 +336,8 @@ document.addEventListener("DOMContentLoaded", () => {
           const tailX = s.x - Math.cos(Math.atan2(s.vy, s.vx)) * s.length * s.alpha;
           const tailY = s.y - Math.sin(Math.atan2(s.vy, s.vx)) * s.length * s.alpha;
           const grad  = ctx.createLinearGradient(tailX, tailY, s.x, s.y);
-          grad.addColorStop(0, `rgba(180,220,255,0)`);
-          grad.addColorStop(1, `rgba(220,240,255,${s.alpha.toFixed(2)})`);
+          grad.addColorStop(0, `rgba(192,132,252,0)`);
+          grad.addColorStop(1, `rgba(233,213,255,${s.alpha.toFixed(2)})`);
           ctx.beginPath();
           ctx.moveTo(tailX, tailY);
           ctx.lineTo(s.x, s.y);
@@ -440,9 +440,9 @@ document.addEventListener("DOMContentLoaded", () => {
         lastTrailTime = now;
 
         const colors = [
-          [0,   212, 255],
-          [123,  97, 255],
-          [180, 160, 255],
+          [192, 132, 252],  // violet
+          [124,  58, 237],  // deep purple
+          [167, 139, 250],  // soft lavender
         ];
         const [cr, cg, cb] = colors[Math.floor(Math.random() * colors.length)];
         trailParticles.push({
@@ -733,9 +733,9 @@ document.addEventListener("DOMContentLoaded", () => {
         dist: Math.random() * 0.3 + 0.05,
         speed: Math.random() * 0.006 + 0.003,
         r: Math.random() * 1.2 + 0.3,
-        cr: Math.random() > 0.5 ? 140 : 200,
-        cg: Math.random() > 0.5 ? 210 : 230,
-        cb: 255,
+        cr: Math.random() > 0.5 ? 192 : 167,
+        cg: Math.random() > 0.5 ? 132 : 139,
+        cb: Math.random() > 0.5 ? 252 : 250,
       }));
     };
 
@@ -825,5 +825,98 @@ document.addEventListener("DOMContentLoaded", () => {
       contactForm.reset();
     });
   }
+  /* 17. Music Player */
+  const musicPlayer = document.getElementById("musicPlayer");
+  const bgMusic     = document.getElementById("bgMusic");
+  const musicToggle = document.getElementById("musicToggle");
+  const musicMute   = document.getElementById("musicMute");
 
-});  // end DOMContentLoaded
+  if (musicPlayer && bgMusic && musicToggle) {
+    const iconPlay  = musicToggle.querySelector(".icon-play");
+    const iconPause = musicToggle.querySelector(".icon-pause");
+
+    // Helper: update UI to playing state
+    const setPlaying = () => {
+      musicPlayer.classList.add("playing");
+      iconPlay.style.display  = "none";
+      iconPause.style.display = "block";
+    };
+
+    // Helper: update UI to paused state
+    const setPaused = () => {
+      musicPlayer.classList.remove("playing");
+      iconPlay.style.display  = "block";
+      iconPause.style.display = "none";
+    };
+
+    // Play/Pause toggle
+    musicToggle.addEventListener("click", () => {
+      if (bgMusic.paused) {
+        bgMusic.play().then(setPlaying).catch(() => {});
+      } else {
+        bgMusic.pause();
+        setPaused();
+      }
+    });
+
+    // Mute/Unmute toggle
+    if (musicMute) {
+      const iconVolume = musicMute.querySelector(".icon-volume");
+      const iconMuted  = musicMute.querySelector(".icon-muted");
+      musicMute.addEventListener("click", () => {
+        bgMusic.muted = !bgMusic.muted;
+        if (bgMusic.muted) {
+          musicPlayer.classList.add("muted");
+          iconVolume.style.display = "none";
+          iconMuted.style.display  = "block";
+        } else {
+          musicPlayer.classList.remove("muted");
+          iconVolume.style.display = "block";
+          iconMuted.style.display  = "none";
+        }
+      });
+    }
+
+    // ── Autoplay strategy ──────────────────────────────────────────────
+    bgMusic.volume = 0.4;
+
+    const soundIntro = document.getElementById("soundIntro");
+
+    const startMusic = () => {
+      bgMusic.play().then(() => {
+        setPlaying();
+      }).catch(() => {});
+      if (soundIntro) {
+        soundIntro.classList.add("hidden");
+      }
+    };
+
+    const dismissSilent = () => {
+      if (soundIntro) soundIntro.classList.add("hidden");
+    };
+
+    if (soundIntro) {
+      // Klik overlay = masuk dengan musik
+      soundIntro.addEventListener("click", (e) => {
+        // Klik "lanjut tanpa suara" (span)
+        if (e.target.tagName === "SPAN") {
+          dismissSilent();
+        } else {
+          startMusic();
+        }
+      });
+    }
+
+    // Fallback: kalau browser izinkan autoplay, skip overlay langsung
+    bgMusic.muted = true;
+    bgMusic.play().then(() => {
+      bgMusic.muted = false;
+      setPlaying();
+      if (soundIntro) soundIntro.classList.add("hidden");
+    }).catch(() => {
+      // Browser blokir — tampilkan overlay
+      bgMusic.muted = false;
+    });
+  }
+
+});
