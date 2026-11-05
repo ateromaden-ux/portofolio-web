@@ -1089,7 +1089,11 @@ body.hovering .cursor-outline {
 /* Prevent tap highlight & double-tap zoom on touch */
 * {
     -webkit-tap-highlight-color: transparent;
-    touch-action: pan-x pan-y;
+}
+
+/* touch-action hanya untuk elemen non-interactive */
+body {
+    touch-action: pan-y;
 }
 
 /* Prevent iOS auto font-size zoom saat focus input */
@@ -1334,4 +1338,64 @@ section, main, footer, nav {
 @keyframes soundIntroPulse {
     0%, 100% { transform: scale(1); }
     50% { transform: scale(1.04); }
+}
+
+/* ==========================================================
+   DESKTOP MODE on mobile (forced desktop rendering ~1024px)
+   ========================================================== */
+
+/* Pastikan layout tidak pecah di lebar kecil non-mobile */
+@media (min-width: 769px) and (max-width: 1100px) {
+    .container { padding: 0 1.5rem; }
+
+    .about-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 2.5rem;
+    }
+
+    .project-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 1.6rem;
+    }
+
+    .skills-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .services-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .hero h1 {
+        font-size: clamp(2.8rem, 7vw, 5rem);
+    }
+
+    .cta-panel {
+        padding: 3rem 2rem;
+    }
+
+    /* navbar tetap readable */
+    .nav-links { gap: 1.4rem; }
+    .nav-link { font-size: 0.85rem; }
+
+    /* music player & wa float jangan overlap */
+    .music-player { bottom: 1.5rem; left: 1.5rem; }
+    .wa-float { bottom: 1.5rem; right: 1.5rem; }
+}
+
+/* Untuk layar sangat sempit yang force desktop (< 400px physical) */
+@media (min-width: 769px) and (max-width: 900px) {
+    .about-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .nav-links { gap: 1rem; }
+
+    .section-header h2 {
+        font-size: clamp(1.8rem, 5vw, 2.8rem);
+    }
+
+    .contact-title {
+        font-size: clamp(2rem, 6vw, 3rem);
+    }
 }
